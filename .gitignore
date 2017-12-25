@@ -13,3 +13,7 @@ winpty.opensdf
 /src/Default
 /src/Release
 /src/gen
+
+target/
+Cargo.lock
+.vs/
