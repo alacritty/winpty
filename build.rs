@@ -7,11 +7,12 @@ use std::process::Command;
 
 fn main() {
     // Generate version header
-    Command::new("cmd")
-        .args(&["/C", "./src/shared/UpdateGenVersion.bat"])
+    let output = Command::new("cmd")
+        .args(&["/C", "UpdateGenVersion.bat"])
         .current_dir("./src/shared")
         .output()
         .expect("Failed to generate GenVersion.h");
+    assert!(output.status.success());
 
     // Build winpty, only MSVC is supported
     // 32bit *should* work but hasn't been tested
@@ -45,6 +46,10 @@ fn main() {
         .clang_arg("c++")
         // This breaks the bindings at the moment
         .rustfmt_bindings(false)
+        .blacklist_type("_IMAGE_LINENUMBER")
+        .blacklist_type("_IMAGE_LINENUMBER__bindgen_ty_1")
+        .blacklist_type("IMAGE_LINENUMBER")
+        .blacklist_type("PIMAGE_LINENUMBER")
         .generate()
         .expect("Unable to generate bindings");
 
