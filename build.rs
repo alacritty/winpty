@@ -4,6 +4,8 @@ extern crate cc;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
+#[cfg(feature="winpty-agent")]
+use std::fs::copy;
 
 fn main() {
     // Generate version header
@@ -14,7 +16,35 @@ fn main() {
         .expect("Failed to generate GenVersion.h");
     assert!(output.status.success());
 
-    // Build winpty, only MSVC is supported
+
+    #[cfg(feature = "winpty-agent")]
+    {
+        let arch = if cfg!(target_arch = "x86_64") {
+            "x64"
+        } else {
+            "Win32"
+        };
+
+        // Build winpty-agent binary
+        let output = Command::new("msbuild")
+            .args(&[
+                "src/winpty.sln",
+                "/target:winpty-agent",
+                "/p:Configuration=Release",
+            ])
+            .arg(format!("/p:Platform={}", arch))
+            .output()
+            .expect("Failed to generate GenVersion.h");
+        assert!(output.status.success());
+
+        // Copy generated winpty-agent to rust target directory
+        copy(
+            format!("src/Release/{}/winpty-agent.exe", arch),
+            PathBuf::from(env::var("OUT_DIR").unwrap()).join("winpty-agent.exe"),
+        ).unwrap();
+    }
+
+    // Build winpty library, only MSVC is supported
     // 32bit *should* work but hasn't been tested
     cc::Build::new()
         .cpp(true)

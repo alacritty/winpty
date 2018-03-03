@@ -18,6 +18,9 @@ exclude = [
 path = "lib.rs"
 name = "winpty_sys"
 
+[features]
+winpty-agent = []
+
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
 bindgen = "0.33"
