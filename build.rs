@@ -14,8 +14,9 @@ fn main() {
         .current_dir("./src/shared")
         .output()
         .expect("Failed to generate GenVersion.h");
-    assert!(output.status.success());
-
+    if !output.status.success() {
+        panic!("{}", from_utf8(&output.stdout).unwrap());
+    }
 
     #[cfg(feature = "winpty-agent")]
     {
@@ -24,6 +25,21 @@ fn main() {
         } else {
             "Win32"
         };
+
+        // Generate solution file for MSVC
+        if !Path::new("src/winpty.sln").exists() {
+            let output = Command::new("gyp")
+                .args(&[
+                    "-I", "configurations.gypi"
+                ])
+                .current_dir("src")
+                .output()
+                .expect("Failed to generate winpty.sln. Is gyp in your path?");
+
+            if !output.status.success() {
+                panic!("{}", from_utf8(&output.stdout).unwrap());
+            }
+        }
 
         // Build winpty-agent binary
         let output = Command::new("msbuild")
@@ -34,8 +50,11 @@ fn main() {
             ])
             .arg(format!("/p:Platform={}", arch))
             .output()
-            .expect("Failed to generate GenVersion.h");
-        assert!(output.status.success());
+            .expect("Failed to build winpty-agent. Is msbuild in your path?");
+
+        if !output.status.success() {
+            panic!("{}", from_utf8(&output.stdout).unwrap());
+        }
 
         // Copy generated winpty-agent to rust target directory
         copy(
