@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::process::Command;
 #[cfg(feature="winpty-agent")]
 use std::fs::copy;
+use std::str::from_utf8;
 
 fn main() {
     // Generate version header
