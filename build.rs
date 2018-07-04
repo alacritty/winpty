@@ -110,4 +110,6 @@ fn main() {
         .expect("Couldn't write bindings!");
 
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rustc-link-lib=user32");
+    println!("cargo:rustc-link-lib=advapi32");
 }
