@@ -87,6 +87,7 @@ fn main() {
         .file("src/shared/WinptyVersion.cc")
         .define("COMPILING_WINPTY_DLL", None)
         .flag("/EHsc") // Exception handling
+        .flag("/DUNICODE")
         .compile("winpty");
 
     // Generate bindings
