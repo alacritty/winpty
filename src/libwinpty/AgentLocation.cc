@@ -64,21 +64,12 @@ static bool pathExists(const std::wstring &path) {
 }
 
 std::wstring findAgentProgram() {
-    LPTSTR ret[MAX_PATH];
-    // This will search both in the path provided and in the environment PATH
-    SearchPath(
-        dirname(getModuleFileName(getCurrentModule())).c_str(),
-        AGENT_EXE,
-        NULL,
-        MAX_PATH,
-        *ret,
-        NULL
-    );
-
-    if (!pathExists(*ret)) {
+    std::wstring progDir = dirname(getModuleFileName(getCurrentModule()));
+    std::wstring ret = progDir + (L"\\" AGENT_EXE);
+    if (!pathExists(ret)) {
         throw LibWinptyException(
             WINPTY_ERROR_AGENT_EXE_MISSING,
-            (L"agent executable does not exist: '" + std::wstring(*ret) + L"'").c_str());
+            (L"agent executable does not exist: '" + ret + L"'").c_str());
     }
-    return std::wstring(*ret);
+    return ret;
 }
