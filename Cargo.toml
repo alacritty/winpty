@@ -23,4 +23,4 @@ winpty-agent = []
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
-bindgen = "0.33"
+bindgen = "0.45"
