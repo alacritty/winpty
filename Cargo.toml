@@ -2,7 +2,7 @@
 name = "winpty-sys"
 version = "0.4.3"
 description = "Rust winpty bindings"
-repository = "https://github.com/rprichard/winpty"
+repository = "https://github.com/zacps/winpty"
 readme = "README.md"
 keywords = ["windows", "console", "tty", "winapi"]
 categories = ["os::windows-apis", "external-ffi-bindings"]
