@@ -4,9 +4,12 @@ extern crate cc;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
+use std::str::from_utf8;
+
 #[cfg(feature="winpty-agent")]
 use std::fs::copy;
-use std::str::from_utf8;
+#[cfg(feature="winpty-agent")]
+use std::fs::Path;
 
 fn main() {
     // Generate version header
@@ -94,12 +97,10 @@ fn main() {
         .header("src/include/winpty.h")
         .clang_arg("-x")
         .clang_arg("c++")
-        // This breaks the bindings at the moment
-        .rustfmt_bindings(false)
-        .blacklist_type("_IMAGE_LINENUMBER")
-        .blacklist_type("_IMAGE_LINENUMBER__bindgen_ty_1")
-        .blacklist_type("IMAGE_LINENUMBER")
-        .blacklist_type("PIMAGE_LINENUMBER")
+        .rustfmt_bindings(true)
+        .whitelist_type("winpty_.*")
+        .whitelist_function("winpty_.*")
+        .whitelist_function("wcslen")
         .generate()
         .expect("Unable to generate bindings");
 

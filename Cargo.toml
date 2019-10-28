@@ -1,6 +1,6 @@
 [package]
 name = "winpty-sys"
-version = "0.4.3"
+version = "0.4.4"
 description = "Rust winpty bindings"
 repository = "https://github.com/zacps/winpty"
 readme = "README.md"
@@ -23,4 +23,4 @@ winpty-agent = []
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
-bindgen = "0.45"
+bindgen = "0.51.1"
