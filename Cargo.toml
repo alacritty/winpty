@@ -1,6 +1,7 @@
 [package]
 name = "winpty-sys"
 version = "0.4.4"
+authors = ["Zac Pullar-Strecker <zacmps@gmail.com>"]
 description = "Rust winpty bindings"
 repository = "https://github.com/zacps/winpty"
 readme = "README.md"
