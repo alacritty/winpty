@@ -1,27 +1,20 @@
 [package]
-name = "winpty-sys"
-version = "0.4.4"
+name = "winpty"
+version = "0.1.0"
 authors = ["Zac Pullar-Strecker <zacmps@gmail.com>"]
-description = "Rust winpty bindings"
-repository = "https://github.com/zacps/winpty"
-readme = "README.md"
-keywords = ["windows", "console", "tty", "winapi"]
-categories = ["os::windows-apis", "external-ffi-bindings"]
 license = "MIT"
-links = "winpty"
-build = "build.rs"
-exclude = [
-    "misc/*",
-    "ship/*",
-]
+description = "Safe rust bindings for winpty"
+edition = "2018"
 
-[lib]
-path = "lib.rs"
-name = "winpty_sys"
+[target.'cfg(windows)'.dependencies]
+winpty_sys = { path = "./winpty_sys", version = "0.4.4" }
+bitflags = "1.0"
 
-[features]
-winpty-agent = []
+[target.'cfg(windows)'.dev-dependencies]
+named_pipe = "0.4.1"
+winapi = { version = "0.3", features = ["winnt", "processthreadsapi"] }
 
-[build-dependencies]
-cc = { version = "1.0", features = ["parallel"] }
-bindgen = "0.53.1"
+[target.'cfg(windows)'.build-dependencies]
+tempfile = "3.0.4"
+http_req = "0.5"
+zip = "0.5"

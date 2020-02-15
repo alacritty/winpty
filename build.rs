@@ -1,117 +1,74 @@
-extern crate bindgen;
-extern crate cc;
+#[cfg(windows)]
+use std::fs::OpenOptions;
+#[cfg(windows)]
+use std::io;
 
+#[cfg(windows)]
 use std::env;
-use std::path::PathBuf;
-use std::process::Command;
-use std::str::from_utf8;
+#[cfg(windows)]
+use std::fs::{copy, File};
+#[cfg(windows)]
+use std::path::Path;
 
-#[cfg(feature="winpty-agent")]
-use std::fs::copy;
-#[cfg(feature="winpty-agent")]
-use std::fs::Path;
+#[cfg(windows)]
+use http_req;
+#[cfg(windows)]
+use tempfile;
+#[cfg(windows)]
+use zip;
+
+#[cfg(windows)]
+const WINPTY_PACKAGE_URL: &str =
+    "https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip";
 
 fn main() {
-    // Generate version header
-    let output = Command::new("cmd")
-        .args(&["/C", "UpdateGenVersion.bat"])
-        .current_dir("./src/shared")
-        .output()
-        .expect("Failed to generate GenVersion.h");
-    if !output.status.success() {
-        panic!("{}", from_utf8(&output.stdout).unwrap());
-    }
-
-    #[cfg(feature = "winpty-agent")]
+    #[cfg(windows)]
     {
-        let arch = if cfg!(target_arch = "x86_64") {
-            "x64"
-        } else {
-            "Win32"
-        };
+        // Path is relative to target/{profile}/build/alacritty-HASH/out
+        let file = Path::new(&env::var("OUT_DIR").unwrap()).join("../../../winpty-agent.exe");
+        if !file.exists() {
+            aquire_winpty_agent(&file);
+        }
 
-        // Generate solution file for MSVC
-        if !Path::new("src/winpty.sln").exists() {
-            let output = Command::new("gyp")
-                .args(&[
-                    "-I", "configurations.gypi"
-                ])
-                .current_dir("src")
-                .output()
-                .expect("Failed to generate winpty.sln. Is gyp in your path?");
+        // The working directory for `cargo test` is in the deps folder, not the debug/release root
+        copy(&file, file.parent().unwrap().join("deps/winpty-agent.exe")).unwrap();
+    }
+}
 
-            if !output.status.success() {
-                panic!("{}", from_utf8(&output.stdout).unwrap());
+#[cfg(windows)]
+fn aquire_winpty_agent(out_path: &Path) {
+    let tmp_dir = tempfile::Builder::new().prefix("alacritty_build").tempdir().unwrap();
+
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(tmp_dir.path().join("winpty_package.zip"))
+        .unwrap();
+    let mut redirects = 0;
+    let mut url = WINPTY_PACKAGE_URL.to_string();
+    loop {
+        let res = http_req::request::get(url.clone(), &mut file).unwrap();
+        if res.status_code().is_redirect() {
+            redirects += 1;
+            url = res.headers().get("Location").unwrap().to_string();
+            if redirects > 5 {
+                panic!("Too many redirects");
             }
+        } else {
+            break;
         }
-
-        // Build winpty-agent binary
-        let output = Command::new("msbuild")
-            .args(&[
-                "src/winpty.sln",
-                "/target:winpty-agent",
-                "/p:Configuration=Release",
-            ])
-            .arg(format!("/p:Platform={}", arch))
-            .output()
-            .expect("Failed to build winpty-agent. Is msbuild in your path?");
-
-        if !output.status.success() {
-            panic!("{}", from_utf8(&output.stdout).unwrap());
-        }
-
-        // Copy generated winpty-agent to rust target directory
-        copy(
-            format!("src/Release/{}/winpty-agent.exe", arch),
-            PathBuf::from(env::var("OUT_DIR").unwrap()).join("winpty-agent.exe"),
-        ).unwrap();
     }
 
-    // Build winpty library, only MSVC is supported
-    // 32bit *should* work but hasn't been tested
-    cc::Build::new()
-        .cpp(true)
-        .include("src/libwinpty")
-        .include("src/include")
-        .include("src/shared")
-        .include("src/gen")
-        .file("src/libwinpty/AgentLocation.cc")
-        .file("src/libwinpty/winpty.cc")
-        .file("src/shared/BackgroundDesktop.cc")
-        .file("src/shared/Buffer.cc")
-        .file("src/shared/DebugClient.cc")
-        .file("src/shared/GenRandom.cc")
-        .file("src/shared/OwnedHandle.cc")
-        .file("src/shared/StringUtil.cc")
-        .file("src/shared/WindowsSecurity.cc")
-        .file("src/shared/WindowsVersion.cc")
-        .file("src/shared/WinptyAssert.cc")
-        .file("src/shared/WinptyException.cc")
-        .file("src/shared/WinptyVersion.cc")
-        .define("COMPILING_WINPTY_DLL", None)
-        .flag("/EHsc") // Exception handling
-        .compile("winpty");
+    let mut archive = zip::ZipArchive::new(file).unwrap();
 
-    // Generate bindings
-    let bindings = bindgen::Builder::default()
-        .header("src/include/winpty.h")
-        .clang_arg("-x")
-        .clang_arg("c++")
-        .rustfmt_bindings(true)
-        .whitelist_type("winpty_.*")
-        .whitelist_function("winpty_.*")
-        .whitelist_function("wcslen")
-        .whitelist_var("WINPTY_.*")
-        .generate()
-        .expect("Unable to generate bindings");
+    let target = match env::var("TARGET").unwrap().split('-').next().unwrap() {
+        "x86_64" => "x64",
+        "i386" => "ia32",
+        _ => panic!("architecture has no winpty binary"),
+    };
 
-    // Write the bindings to the $OUT_DIR/bindings.rs file.
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings!");
+    let mut winpty_agent = archive.by_name(&format!("{}/bin/winpty-agent.exe", target)).unwrap();
 
-    println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rustc-link-lib=user32");
-    println!("cargo:rustc-link-lib=advapi32");
+    io::copy(&mut winpty_agent, &mut File::create(out_path).unwrap()).unwrap();
 }

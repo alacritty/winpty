@@ -1,0 +1,27 @@
+[package]
+name = "winpty_sys"
+version = "0.4.4"
+authors = ["Zac Pullar-Strecker <zacmps@gmail.com>"]
+description = "Rust winpty bindings"
+repository = "https://github.com/zacps/winpty"
+readme = "README.md"
+keywords = ["windows", "console", "tty", "winapi"]
+categories = ["os::windows-apis", "external-ffi-bindings"]
+license = "MIT"
+links = "winpty"
+build = "build.rs"
+exclude = [
+    "misc/*",
+    "ship/*",
+]
+
+[lib]
+path = "lib.rs"
+name = "winpty_sys"
+
+[features]
+winpty-agent = []
+
+[build-dependencies]
+cc = { version = "1.0", features = ["parallel"] }
+bindgen = "0.53.1"
