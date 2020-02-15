@@ -101,6 +101,7 @@ fn main() {
         .whitelist_type("winpty_.*")
         .whitelist_function("winpty_.*")
         .whitelist_function("wcslen")
+        .whitelist_var("WINPTY_.*")
         .generate()
         .expect("Unable to generate bindings");
 
