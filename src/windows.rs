@@ -1,4 +1,3 @@
-use std::slice;
 use std::ffi::{OsStr, OsString};
 use std::fmt::{self, Display, Formatter};
 use std::iter::once;
@@ -7,6 +6,7 @@ use std::os::windows::io::RawHandle;
 use std::path::{Path, PathBuf};
 use std::ptr::{null, null_mut};
 use std::result::Result;
+use std::slice;
 
 use bitflags::bitflags;
 
