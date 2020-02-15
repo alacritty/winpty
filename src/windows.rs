@@ -1,3 +1,4 @@
+use slice;
 use std::ffi::{OsStr, OsString};
 use std::fmt::{self, Display, Formatter};
 use std::iter::once;
@@ -56,7 +57,7 @@ fn check_err(e: *mut winpty_error_t) -> Result<(), Error> {
     unsafe {
         let code = winpty_error_code(e);
         let raw = winpty_error_msg(e);
-        let message = String::from_utf16_lossy(std::slice::from_raw_parts(raw, wcslen(raw)));
+        let message = String::from_utf16_lossy(slice::from_raw_parts(raw, wcslen(raw) as usize));
         winpty_error_free(e);
 
         let code = match code {
@@ -170,7 +171,7 @@ impl Winpty {
     pub fn conin_name(&mut self) -> PathBuf {
         unsafe {
             let raw = winpty_conin_name(self.0);
-            OsString::from_wide(std::slice::from_raw_parts(raw, wcslen(raw))).into()
+            OsString::from_wide(slice::from_raw_parts(raw, wcslen(raw) as usize)).into()
         }
     }
 
@@ -179,7 +180,7 @@ impl Winpty {
     pub fn conout_name(&mut self) -> PathBuf {
         unsafe {
             let raw = winpty_conout_name(self.0);
-            OsString::from_wide(std::slice::from_raw_parts(raw, wcslen(raw))).into()
+            OsString::from_wide(slice::from_raw_parts(raw, wcslen(raw) as usize)).into()
         }
     }
 
@@ -189,7 +190,7 @@ impl Winpty {
     pub fn conerr_name(&mut self) -> PathBuf {
         unsafe {
             let raw = winpty_conerr_name(self.0);
-            OsString::from_wide(std::slice::from_raw_parts(raw, wcslen(raw))).into()
+            OsString::from_wide(slice::from_raw_parts(raw, wcslen(raw) as usize)).into()
         }
     }
 
