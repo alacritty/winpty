@@ -1,4 +1,4 @@
-use slice;
+use std::slice;
 use std::ffi::{OsStr, OsString};
 use std::fmt::{self, Display, Formatter};
 use std::iter::once;
