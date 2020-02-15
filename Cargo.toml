@@ -4,6 +4,10 @@ version = "0.2.0"
 authors = ["Christian Duerr <contact@christianduerr.com", "Zac Pullar-Strecker <zacmps@gmail.com>"]
 license = "MIT"
 description = "Safe rust bindings for winpty"
+repository = "https://github.com/alacritty/winpty"
+keywords = ["windows", "console", "tty", "winapi"]
+exclude = ["/.travis.yml"]
+readme = "../README.md"
 edition = "2018"
 
 [target.'cfg(windows)'.dependencies]
