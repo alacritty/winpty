@@ -7,7 +7,7 @@ description = "Safe rust bindings for winpty"
 repository = "https://github.com/alacritty/winpty"
 keywords = ["windows", "console", "tty", "winapi"]
 exclude = ["/.travis.yml"]
-readme = "../README.md"
+readme = "README.md"
 edition = "2018"
 
 [target.'cfg(windows)'.dependencies]
