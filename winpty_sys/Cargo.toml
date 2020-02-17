@@ -1,5 +1,5 @@
 [package]
-name = "winpty_sys"
+name = "winpty-sys"
 version = "0.5.0"
 authors = ["Christian Duerr <contact@christianduerr.com", "Zac Pullar-Strecker <zacmps@gmail.com>"]
 description = "Rust winpty bindings"
